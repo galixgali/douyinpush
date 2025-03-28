@@ -1,4 +1,5 @@
 import time
+import sys
 
 import schedule
 
@@ -47,7 +48,35 @@ def init_query_task(query_task_config_list: list):
         time.sleep(1)
 
 
+def login_wechat():
+    """登录微信机器人"""
+    push_channel_config_list = global_config.get_push_channel_config()
+    init_push_channel(push_channel_config_list)
+    
+    for channel_name, channel in push_channel.push_channel_dict.items():
+        if isinstance(channel, push_channel.WeChatBot):
+            log.info(f"开始登录微信机器人【{channel_name}】")
+            success = channel.login()
+            if success:
+                log.info(f"微信机器人【{channel_name}】登录成功，可以开始使用")
+                # 发送一条测试消息
+                # channel.push(
+                #     title="微信机器人登录成功",
+                #     content="登录成功，现在可以接收推送消息了！",
+                #     jump_url=None,
+                #     pic_url=None
+                # )
+            else:
+                log.error(f"微信机器人【{channel_name}】登录失败")
+
+
 def main():
+    # 处理命令行参数
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "login_wechat":
+            login_wechat()
+            return
+    
     common_config = global_config.get_common_config()
     query_task_config_list = global_config.get_query_task_config()
     push_channel_config_list = global_config.get_push_channel_config()
